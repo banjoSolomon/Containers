@@ -1,0 +1,15 @@
+
+
+.mainIcon {
+    display: flex;
+    color: #cccccc;
+    justify-content: center;
+    margin: 0;
+}
+
+.iconImage {
+    width: 100vw;
+    height: auto;
+    max-height: 50vh;
+    object-fit: cover;
+}

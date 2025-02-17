@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./index.module.css";
 
+import karraboLogo from "./../../../asset/karrabo.png";
+import meedlLogo from "./../../../asset/meddle.png";
+import enumLogo from "./../../../asset/enum.png";
+
 const fetchContainerStatus = async () => {
     const containers = [
         { name: "Enum (Frontend)", status: Math.random() > 0.5 ? "operational" : "server down" },
@@ -60,7 +64,6 @@ const Section2 = () => {
                         style={{
                             margin: "10px",
                             padding: "20px",
-                            // border: container.status === "active incident" ? "1px solid yellow" : "1px solid #ddd",
                             borderRadius: "8px",
                             boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                             display: "flex",
@@ -73,7 +76,36 @@ const Section2 = () => {
                         }}
                         onClick={() => handleStatusClick(container.status)}
                     >
-                        <div className={styles.containerName}>{container.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            {container.name.includes("Enum") && (
+                                <div style={{ marginRight: '8px' }}>
+                                    <img
+                                        src={enumLogo}
+                                        alt="Enum Logo"
+                                        style={{ width: '30px', height: '30px', marginTop: '-4px' }}
+                                    />
+                                </div>
+                            )}
+                            {container.name.includes("Karrabo") && (
+                                <div style={{ marginRight: '8px' }}>
+                                    <img
+                                        src={karraboLogo}
+                                        alt="Karrabo Logo"
+                                        style={{ width: '30px', height: '30px', marginTop: '-4px' }}
+                                    />
+                                </div>
+                            )}
+                            {container.name.includes("Meedl") && (
+                                <div style={{ marginRight: '8px' }}>
+                                    <img
+                                        src={meedlLogo}
+                                        alt="Meedl Logo"
+                                        style={{ width: '30px', height: '30px', marginTop: '-4px' }}
+                                    />
+                                </div>
+                            )}
+                            <div className={styles.containerName}>{container.name}</div>
+                        </div>
                         <div
                             style={{
                                 backgroundColor: container.status === "operational" ? "green" :

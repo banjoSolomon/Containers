@@ -43,22 +43,7 @@
 }
 
 .progress {
-    background-color: #4caf50;
     height: 100%;
     border-radius: 5px;
     transition: width 0.5s ease;
 }
-
-
-/*.progress {*/
-/*    background: repeating-linear-gradient(*/
-/*            90deg, !* Horizontal stripes *!*/
-/*            #4caf50, !* Green color *!*/
-/*            #4caf50 10%, !* Width of green stripe *!*/
-/*            #eee 10%, !* Background color *!*/
-/*            #eee 20% !* Width of background stripe *!*/
-/*    );*/
-/*    height: 100%;*/
-/*    border-radius: 5px;*/
-/*    transition: width 0.5s ease; !* Smooth transition for width change *!*/
-/*}*/

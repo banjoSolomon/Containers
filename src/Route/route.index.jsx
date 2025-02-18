@@ -1,7 +1,8 @@
 import Layout from "../Layout";
 import Home from "../Componet/Home";
 import Status from "../Componet/Home/Pages/status.module";
-; // Import the Status component
+import Enum from "../Componet/Home/Pages/enum.module";
+
 
 export const ROUTES = [
     {
@@ -15,6 +16,11 @@ export const ROUTES = [
             {
                 path: '/status',
                 element: <Status />,
+            },
+
+            {
+                path: '/enum',
+                element: <Enum />,
             },
 
         ],

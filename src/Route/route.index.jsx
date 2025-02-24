@@ -19,7 +19,7 @@ export const ROUTES = [
             },
 
             {
-                path: '/enum',
+                path: '/metrics',
                 element: <Enum />,
             },
 

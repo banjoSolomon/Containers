@@ -40,8 +40,10 @@ const Status = () => {
 
                 setStatuses([...ec2Statuses, ...ecsStatuses]);
 
+                // Initialize Docker images with isOpen flag
                 const dockerImagesWithFlag = {};
-                for (const [instanceId, images] of Object.entries(data.DockerImages)) {
+                const dockerImagesData = data.DockerImages || {}; // Fallback to empty object if DockerImages is undefined/null
+                for (const [instanceId, images] of Object.entries(dockerImagesData)) {
                     dockerImagesWithFlag[instanceId] = {
                         isOpen: false,
                         images: images,

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-
+import karraboLogo from "./../../../asset/karrabo.png";
 
 const Status = () => {
     const [statuses, setStatuses] = useState([]);
+    const [dockerImages, setDockerImages] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -20,6 +21,7 @@ const Status = () => {
                 console.log("API Response:", data);
 
                 const ec2Statuses = data.EC2.map(item => ({
+                    id: item.id,
                     name: item.name,
                     uptime: item.uptime,
                     performance: item.status === "running" ? "Operational" : "Down",
@@ -27,16 +29,25 @@ const Status = () => {
 
                 const ecsStatuses = data.ECS.map(service => ({
                     name: service.serviceName,
-                    uptime: service.runningDetails.length > 0 ? service.runningDetails[0].uptime : "N/A", // Display uptime for the first running task or 'N/A'
+                    uptime: service.runningDetails.length > 0 ? service.runningDetails[0].uptime : "N/A",
                     performance: service.runningTasks > 0 ? "Operational" : "Down",
                     runningTasks: service.runningTasks,
                     stoppedTasks: service.stoppedTasks,
                     runningDetails: service.runningDetails,
                     stoppedDetails: service.stoppedDetails,
-                    downtime: service.stoppedDetails.map(task => task.downtime).join(", ") || "N/A" // Collect downtime for stopped tasks
+                    downtime: service.stoppedDetails.map(task => task.downtime).join(", ") || "N/A"
                 }));
 
                 setStatuses([...ec2Statuses, ...ecsStatuses]);
+
+                const dockerImagesWithFlag = {};
+                for (const [instanceId, images] of Object.entries(data.DockerImages)) {
+                    dockerImagesWithFlag[instanceId] = {
+                        isOpen: false,
+                        images: images,
+                    };
+                }
+                setDockerImages(dockerImagesWithFlag);
             } catch (error) {
                 setError(error.message);
             } finally {
@@ -49,6 +60,16 @@ const Status = () => {
         return () => clearInterval(intervalId);
     }, []);
 
+    const toggleDockerImages = (instanceId) => {
+        setDockerImages(prev => ({
+            ...prev,
+            [instanceId]: {
+                ...prev[instanceId],
+                isOpen: !prev[instanceId]?.isOpen,
+            },
+        }));
+    };
+
     return (
         <div style={{
             fontFamily: 'sans-serif',
@@ -56,14 +77,22 @@ const Status = () => {
             margin: '30px',
             background: 'linear-gradient(to right, #f9f9f9, #e0e0e0)'
         }}>
-            <h1 style={{
-                fontWeight: 'bold',
-                fontSize: '2.5em',
-                color: '#333',
-                textShadow: '2px 2px 4px #aaa',
-                borderBottom: '2px solid #ccc',
-                marginBottom: '30px'
-            }}>Dev Status</h1>
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '30px' }}>
+                <h1 style={{
+                    fontWeight: 'bold',
+                    fontSize: '2.5em',
+                    color: '#333',
+                    textShadow: '2px 2px 4px #aaa',
+                    borderBottom: '2px solid #ccc',
+                    marginRight: '15px',
+                    marginBottom: '0'
+                }}>Dev Server Status</h1>
+                <img
+                    src={karraboLogo}
+                    alt="Karrabo Logo"
+                    style={{ width: "50px", height: "50px" }}
+                />
+            </div>
             {loading && <p>Loading statuses...</p>}
             {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
@@ -87,8 +116,14 @@ const Status = () => {
                             }}>
                                 Performance: {status.performance}
                             </div>
-                            <div style={{ marginBottom: '5px' }}>Downtime: {status.downtime || "N/A"}</div> {/* Display downtime for ECS services */}
-                            <div style={{ height: '10px', backgroundColor: '#eee', borderRadius: '5px', overflow: 'hidden', boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.2)' }}>
+                            <div style={{ marginBottom: '5px' }}>Downtime: {status.downtime || "N/A"}</div>
+                            <div style={{
+                                height: '10px',
+                                backgroundColor: '#eee',
+                                borderRadius: '5px',
+                                overflow: 'hidden',
+                                boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.2)'
+                            }}>
                                 <div style={{
                                     width: status.performance === "Operational" ? "100%" : "0%",
                                     backgroundColor: status.performance === "Operational" ? "#4caf50" : "#ff3b3b",
@@ -96,10 +131,65 @@ const Status = () => {
                                     transition: 'width 0.5s ease'
                                 }} />
                             </div>
+
+                            {status.id && dockerImages[status.id] && (
+                                <div style={{ marginTop: '15px' }}>
+                                    <button
+                                        onClick={() => toggleDockerImages(status.id)}
+                                        style={{
+                                            backgroundColor: 'green',
+                                            color: '#fff',
+                                            border: '1px solid green',
+                                            padding: '8px 12px',
+                                            borderRadius: '5px',
+                                            cursor: 'pointer',
+                                            marginBottom: '10px'
+                                        }}
+                                    >
+                                        {dockerImages[status.id].isOpen ? "Hide Docker Images" : "Show Docker Images"}
+                                    </button>
+                                    {dockerImages[status.id].isOpen && (
+                                        <div style={{
+                                            padding: '15px',
+                                            backgroundColor: '#f9f9f9',
+                                            borderRadius: '12px',
+                                            border: '1px solid green',
+                                            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)'
+                                        }}>
+                                            <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Running Docker Images:</h4>
+                                            {dockerImages[status.id].images.length > 0 ? (
+                                                dockerImages[status.id].images.map((image, idx) => (
+                                                    <div key={idx} style={{ marginBottom: '5px', cursor: 'pointer' }}>
+                                                        {image}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div style={{ color: "red", fontWeight: "bold" }}>
+                                                    Image not running
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     ))}
-                    <div style={{ marginTop: '30px', border: '4px solid white', padding: '20px', borderRadius: '10px', backgroundColor: '#f0f0f0' }}>
-                        <h2 style={{ fontWeight: 'bold', fontSize: '1.5em', borderBottom: '1px solid #ccc', marginBottom: '15px', color: '#333', textTransform: 'uppercase' }}>ECS Tasks</h2>
+
+                    <div style={{
+                        marginTop: '30px',
+                        border: '4px solid white',
+                        padding: '20px',
+                        borderRadius: '10px',
+                        backgroundColor: '#f0f0f0'
+                    }}>
+                        <h2 style={{
+                            fontWeight: 'bold',
+                            fontSize: '1.5em',
+                            borderBottom: '1px solid #ccc',
+                            marginBottom: '15px',
+                            color: '#333',
+                            textTransform: 'uppercase'
+                        }}>ECS Tasks</h2>
                         {statuses.filter(status => status.runningTasks !== undefined).map((service, index) => (
                             <div key={index} style={{
                                 marginBottom: '30px',
@@ -110,14 +200,33 @@ const Status = () => {
                                 border: '1px solid white',
                                 transition: 'transform 0.3s, box-shadow 0.3s'
                             }}>
-                                <h3 style={{ fontWeight: 'bold', marginBottom: '10px', color: '#333', textTransform: 'uppercase' }}>{service.name}</h3>
-                                <p>Running Tasks: <span style={{ color: "green", fontWeight: 'bold', fontSize: '1.1em' }}>{service.runningTasks} 🔄</span></p>
-                                <p>Stopped Tasks: <span style={{ color: "red", fontWeight: 'bold', fontSize: '1.1em' }}>{service.stoppedTasks} ⛔</span></p>
+                                <h3 style={{
+                                    fontWeight: 'bold',
+                                    marginBottom: '10px',
+                                    color: '#333',
+                                    textTransform: 'uppercase'
+                                }}>{service.name}</h3>
+                                <p>Running Tasks: <span style={{
+                                    color: "green",
+                                    fontWeight: 'bold',
+                                    fontSize: '1.1em'
+                                }}>{service.runningTasks} 🔄</span></p>
+                                <p>Stopped Tasks: <span style={{
+                                    color: "red",
+                                    fontWeight: 'bold',
+                                    fontSize: '1.1em'
+                                }}>{service.stoppedTasks} ⛔</span></p>
                                 {service.stoppedDetails.length > 0 && (
                                     <div style={{ marginTop: '10px' }}>
                                         <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Stopped Task Details:</h4>
                                         {service.stoppedDetails.map((task, idx) => (
-                                            <div key={idx} style={{ marginBottom: '8px', padding: '10px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px solid #ccc' }}>
+                                            <div key={idx} style={{
+                                                marginBottom: '8px',
+                                                padding: '10px',
+                                                backgroundColor: '#f9f9f9',
+                                                borderRadius: '8px',
+                                                border: '1px solid #ccc'
+                                            }}>
                                                 <p>Task ARN: {task.taskArn}</p>
                                                 <p>Status: <span style={{ color: "red" }}>{task.status}</span></p>
                                                 <p>Downtime: {task.downtime || "N/A"}</p>

@@ -19,7 +19,7 @@ const Enum = () => {
                     const formattedMetrics = data.EC2.map(instance => {
                         const baseUptime = parseFloat(instance.uptime);
                         const dataWithSpikes = Array(6).fill(0).map(() => {
-                            const randomMultiplier = Math.random() * 2;  // Random multiplier between 0 and 2
+                            const randomMultiplier = Math.random() * 2;
                             return baseUptime * randomMultiplier;
                         });
 
@@ -34,11 +34,11 @@ const Enum = () => {
 
                     setEc2Metrics(formattedMetrics);
                 } else {
-                    setError("No EC2 data available.");
+                    setError("No Image data available.");
                 }
             } catch (error) {
-                console.error("Error fetching EC2 metrics:", error);
-                setError("Failed to fetch EC2 metrics.");
+                console.error("Error fetching Image metrics:", error);
+                setError("Failed to fetch Image metrics.");
             }
         };
 
@@ -47,7 +47,7 @@ const Enum = () => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px' }}>
-            <h2 style={{ textAlign: 'center' }}>EC2 Metrics</h2>
+            <h2 style={{ textAlign: 'center' }}>Image Metrics</h2>
             {error ? (
                 <div style={{ color: 'red', textAlign: 'center' }}>{error}</div>
             ) : (
@@ -62,7 +62,7 @@ const Enum = () => {
                                         {
                                             label: `${metric.name} Uptime (hrs)`,
                                             data: metric.data,
-                                            borderColor: '#FF5733', // Changed line color for better contrast
+                                            borderColor: 'green',
                                             fill: false,
                                         },
                                     ],
@@ -73,7 +73,7 @@ const Enum = () => {
                                     scales: {
                                         y: {
                                             beginAtZero: true,
-                                            max: Math.max(...metric.data) + 10, // Extend the y-axis to display spikes clearly
+                                            max: Math.max(...metric.data) + 10,
                                         },
                                     },
                                 }}

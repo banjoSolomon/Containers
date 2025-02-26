@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import karraboLogo from "./../../../asset/karrabo.png";
 
 const Status = () => {
@@ -6,6 +7,7 @@ const Status = () => {
     const [dockerImages, setDockerImages] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate(); // Initialize useNavigate
 
     useEffect(() => {
         const fetchStatuses = async () => {
@@ -70,6 +72,11 @@ const Status = () => {
                 isOpen: !prev[instanceId]?.isOpen,
             },
         }));
+    };
+
+    const handleImageClick = (images) => {
+        // Navigate to the metrics page and pass all images as state
+        navigate('/metrics', { state: { images } });
     };
 
     return (
@@ -161,7 +168,7 @@ const Status = () => {
                                             <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Running Docker Images:</h4>
                                             {dockerImages[status.id].images.length > 0 ? (
                                                 dockerImages[status.id].images.map((image, idx) => (
-                                                    <div key={idx} style={{ marginBottom: '5px', cursor: 'pointer' }}>
+                                                    <div key={idx} style={{ marginBottom: '5px', cursor: 'pointer' }} onClick={() => handleImageClick(dockerImages[status.id].images)}>
                                                         {image}
                                                     </div>
                                                 ))

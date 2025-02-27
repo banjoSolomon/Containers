@@ -5,12 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDocker } from "@fortawesome/free-brands-svg-icons";
 import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
-
 const Status = () => {
     const [statuses, setStatuses] = useState([]);
     const [dockerImages, setDockerImages] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [darkMode, setDarkMode] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -81,6 +81,10 @@ const Status = () => {
         navigate("/metrics", { state: { images } });
     };
 
+    const toggleDarkMode = () => {
+        setDarkMode((prev) => !prev);
+    };
+
     return (
         <div
             style={{
@@ -88,8 +92,10 @@ const Status = () => {
                 padding: "40px",
                 maxWidth: "1200px",
                 margin: "0 auto",
-                backgroundColor: "#f9fafb",
+                backgroundColor: darkMode ? "#1a1a1a" : "#f9fafb",
                 minHeight: "100vh",
+                color: darkMode ? "#ffffff" : "#333",
+                transition: "background-color 0.3s, color 0.3s",
             }}
         >
             <div style={{ display: "flex", alignItems: "center", marginBottom: "30px" }}>
@@ -97,7 +103,7 @@ const Status = () => {
                     style={{
                         fontWeight: "bold",
                         fontSize: "2.5em",
-                        color: "#333",
+                        color: darkMode ? "#ffffff" : "#333",
                         textShadow: "2px 2px 4px #aaa",
                         marginRight: "15px",
                         marginBottom: "0",
@@ -106,6 +112,20 @@ const Status = () => {
                     Dev Server Status
                 </h1>
                 <img src={karraboLogo} alt="Karrabo Logo" style={{ width: "50px", height: "50px" }} />
+                <button
+                    onClick={toggleDarkMode}
+                    style={{
+                        backgroundColor: darkMode ? "#4caf50" : "#333",
+                        color: "white",
+                        border: "none",
+                        padding: "10px 20px",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        marginLeft: "auto",
+                    }}
+                >
+                    {darkMode ? "Light Mode" : "Dark Mode"}
+                </button>
             </div>
 
             {loading && (
@@ -132,7 +152,7 @@ const Status = () => {
                                     boxShadow: "0 6px 12px rgba(0, 0, 0, 0.1)",
                                     padding: "20px",
                                     borderRadius: "12px",
-                                    backgroundColor: "#fff",
+                                    backgroundColor: darkMode ? "#333" : "#fff",
                                     border: "1px solid #e0e0e0",
                                     transition: "transform 0.3s, box-shadow 0.3s",
                                     cursor: "pointer",
@@ -182,7 +202,7 @@ const Status = () => {
                                             <div
                                                 style={{
                                                     padding: "15px",
-                                                    backgroundColor: "#f9f9f9",
+                                                    backgroundColor: darkMode ? "#444" : "#f9f9f9",
                                                     borderRadius: "12px",
                                                     border: "1px solid #e0e0e0",
                                                 }}
@@ -198,11 +218,11 @@ const Status = () => {
                                                                 marginBottom: "5px",
                                                                 cursor: "pointer",
                                                                 padding: "8px",
-                                                                backgroundColor: "#fff",
+                                                                backgroundColor: darkMode ? "#555" : "#fff",
                                                                 borderRadius: "8px",
                                                                 border: "1px solid #e0e0e0",
                                                                 ":hover": {
-                                                                    backgroundColor: "#f0f0f0",
+                                                                    backgroundColor: darkMode ? "#666" : "#f0f0f0",
                                                                 },
                                                             }}
                                                             onClick={() => handleImageClick(dockerImages[status.id].images)}
@@ -226,7 +246,7 @@ const Status = () => {
                             marginTop: "30px",
                             padding: "20px",
                             borderRadius: "12px",
-                            backgroundColor: "#fff",
+                            backgroundColor: darkMode ? "#333" : "#fff",
                             boxShadow: "0 6px 12px rgba(0, 0, 0, 0.1)",
                         }}
                     >
@@ -235,7 +255,7 @@ const Status = () => {
                                 fontWeight: "bold",
                                 fontSize: "1.5em",
                                 marginBottom: "20px",
-                                color: "#333",
+                                color: darkMode ? "#ffffff" : "#333",
                                 display: "flex",
                                 alignItems: "center",
                             }}
@@ -252,7 +272,7 @@ const Status = () => {
                                         marginBottom: "20px",
                                         padding: "20px",
                                         borderRadius: "12px",
-                                        backgroundColor: "#f9f9f9",
+                                        backgroundColor: darkMode ? "#444" : "#f9f9f9",
                                         border: "1px solid #e0e0e0",
                                     }}
                                 >
@@ -276,7 +296,7 @@ const Status = () => {
                                                     style={{
                                                         marginBottom: "8px",
                                                         padding: "10px",
-                                                        backgroundColor: "#fff",
+                                                        backgroundColor: darkMode ? "#555" : "#fff",
                                                         borderRadius: "8px",
                                                         border: "1px solid #e0e0e0",
                                                     }}

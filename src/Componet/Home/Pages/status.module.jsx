@@ -129,14 +129,30 @@ const Status = () => {
             </div>
 
             {loading && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", marginTop: "50px" }}>
+                <div
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginTop: "50px",
+                        animation: "fadeIn 0.5s ease-in",
+                    }}
+                >
                     <FontAwesomeIcon icon={faSpinner} spin style={{ fontSize: "2em", marginRight: "10px" }} />
                     <p>Loading statuses...</p>
                 </div>
             )}
 
             {error && (
-                <div style={{ color: "red", display: "flex", alignItems: "center", marginTop: "20px" }}>
+                <div
+                    style={{
+                        color: "red",
+                        display: "flex",
+                        alignItems: "center",
+                        marginTop: "20px",
+                        animation: "fadeIn 0.5s ease-in",
+                    }}
+                >
                     <FontAwesomeIcon icon={faExclamationTriangle} style={{ marginRight: "10px" }} />
                     <p>Error: {error}</p>
                 </div>
@@ -156,6 +172,7 @@ const Status = () => {
                                     border: "1px solid #e0e0e0",
                                     transition: "transform 0.3s, box-shadow 0.3s",
                                     cursor: "pointer",
+                                    animation: "fadeIn 0.5s ease-in",
                                     ":hover": {
                                         transform: "translateY(-5px)",
                                         boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
@@ -248,6 +265,7 @@ const Status = () => {
                             borderRadius: "12px",
                             backgroundColor: darkMode ? "#333" : "#fff",
                             boxShadow: "0 6px 12px rgba(0, 0, 0, 0.1)",
+                            animation: "fadeIn 0.5s ease-in",
                         }}
                     >
                         <h2

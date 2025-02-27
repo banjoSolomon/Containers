@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import karraboLogo from "./../../../asset/karrabo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faDocker, faServer, faTasks } from "@fortawesome/free-brands-svg-icons";
-import { faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faDocker } from "@fortawesome/free-brands-svg-icons";
+import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+
 
 const Status = () => {
     const [statuses, setStatuses] = useState([]);

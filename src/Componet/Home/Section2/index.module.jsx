@@ -142,6 +142,8 @@ const Section2 = () => {
                             onClick={() => {
                                 if (container.name === "Karrabo") {
                                     navigate("/status");
+                                } else if (container.name === "Enum") {
+                                    navigate("/enum");
                                 }
                             }}
                         />

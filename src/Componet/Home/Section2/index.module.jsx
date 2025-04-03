@@ -106,6 +106,22 @@ const Section2 = () => {
         return () => clearInterval(interval);
     }, []);
 
+    const handleContainerClick = (containerName) => {
+        switch (containerName) {
+            case "Karrabo":
+                navigate("/status");
+                break;
+            case "Enum":
+                navigate("/enum");
+                break;
+            case "Meedl":
+                navigate("/meedle");
+                break;
+            default:
+                break;
+        }
+    };
+
     return (
         <div className={styles.Section2App}>
             <p className={styles.text} style={{ fontSize: "20px", marginBottom: "20px" }}>
@@ -139,13 +155,7 @@ const Section2 = () => {
                         <ContainerCard
                             key={container.name}
                             container={container}
-                            onClick={() => {
-                                if (container.name === "Karrabo") {
-                                    navigate("/status");
-                                } else if (container.name === "Enum") {
-                                    navigate("/enum");
-                                }
-                            }}
+                            onClick={() => handleContainerClick(container.name)}
                         />
                     ))}
                 </div>

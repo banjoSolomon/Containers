@@ -1,53 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Enum from "./../../../asset/enum.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDocker } from "@fortawesome/free-brands-svg-icons";
-import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Karrabo = () => {
-    const [statusData, setStatusData] = useState({ ECS: [], EC2: [] });
+    const [statusData, setStatusData] = useState({ ECS: [], EC2: [], AmazonMQ: [] });
     const [dockerImages, setDockerImages] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
     const navigate = useNavigate();
 
+    const fetchStatuses = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch("https://ilnlr2p810.execute-api.us-east-1.amazonaws.com/prod/ecs-status", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+            const data = await response.json();
+            console.log("API Response:", data);
+
+            const dockerImagesWithFlag = {};
+            data.EC2.forEach(instance => {
+                dockerImagesWithFlag[instance.instanceId] = {
+                    isOpen: false,
+                    images: instance.dockerImages.dockerImages
+                };
+            });
+
+            setStatusData(data);
+            setDockerImages(dockerImagesWithFlag);
+            setLastUpdated(new Date());
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
-        const fetchStatuses = async () => {
-            try {
-                const response = await fetch("https://ilnlr2p810.execute-api.us-east-1.amazonaws.com/prod/ecs-status", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                if (!response.ok) throw new Error(`Error: ${response.status}`);
-
-                const data = await response.json();
-                console.log("API Response:", data);
-
-                // Process Docker images
-                const dockerImagesWithFlag = {};
-                data.EC2.forEach(instance => {
-                    dockerImagesWithFlag[instance.instanceId] = {
-                        isOpen: false,
-                        images: instance.dockerImages.dockerImages
-                    };
-                });
-
-                setStatusData(data);
-                setDockerImages(dockerImagesWithFlag);
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchStatuses();
         const intervalId = setInterval(fetchStatuses, 20 * 60 * 1000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [fetchStatuses]);
 
     const toggleDockerImages = (instanceId) => {
         setDockerImages(prev => ({
@@ -63,16 +67,29 @@ const Karrabo = () => {
         setDarkMode(prev => !prev);
     };
 
-    // Calculate uptime for ECS services
     const getECSUptime = (service) => {
         return service.runningDetails.length > 0
             ? service.runningDetails[0].uptime
             : "N/A";
     };
 
-    // Calculate downtime for ECS services
     const getECSDowntime = (service) => {
         return service.stoppedDetails.map(task => task.downtime).join(", ") || "N/A";
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case "RUNNING":
+                return "#4caf50";
+            case "CREATION_FAILED":
+            case "DELETION_FAILED":
+                return "#ff3b3b";
+            case "REBOOT_IN_PROGRESS":
+            case "CREATION_IN_PROGRESS":
+                return "#ffc107";
+            default:
+                return "#9e9e9e";
+        }
     };
 
     return (
@@ -102,20 +119,43 @@ const Karrabo = () => {
                     Dev Server Status
                 </h1>
                 <img src={Enum} alt="Enum Logo" style={{ width: "50px", height: "50px" }} />
-                <button
-                    onClick={toggleDarkMode}
-                    style={{
-                        backgroundColor: darkMode ? "#4caf50" : "#333",
-                        color: "white",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        marginLeft: "auto",
-                    }}
-                >
-                    {darkMode ? "Light Mode" : "Dark Mode"}
-                </button>
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+                    {lastUpdated && (
+                        <div style={{ marginRight: "20px", color: darkMode ? "#aaa" : "#666" }}>
+                            Last updated: {lastUpdated.toLocaleTimeString()}
+                        </div>
+                    )}
+                    <button
+                        onClick={fetchStatuses}
+                        style={{
+                            backgroundColor: darkMode ? "#333" : "#e0e0e0",
+                            color: darkMode ? "#fff" : "#333",
+                            border: "none",
+                            padding: "10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            marginRight: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
+                        <FontAwesomeIcon icon={faSyncAlt} style={{ marginRight: "5px" }} />
+                        Refresh
+                    </button>
+                    <button
+                        onClick={toggleDarkMode}
+                        style={{
+                            backgroundColor: darkMode ? "#4caf50" : "#333",
+                            color: "white",
+                            border: "none",
+                            padding: "10px 20px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        {darkMode ? "Light Mode" : "Dark Mode"}
+                    </button>
+                </div>
             </div>
 
             {loading && (
@@ -292,6 +332,64 @@ const Karrabo = () => {
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    {/* RabbitMQ Section */}
+                    <h2 style={{ margin: "30px 0 20px", display: "flex", alignItems: "center" }}>
+                        <FontAwesomeIcon icon={faServer} style={{ marginRight: "10px" }} />
+                        RabbitMQ Status
+                    </h2>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
+                        {statusData.AmazonMQ && statusData.AmazonMQ.length > 0 ? (
+                            statusData.AmazonMQ.map((broker, index) => (
+                                <div
+                                    key={`mq-${index}`}
+                                    style={{
+                                        boxShadow: "0 6px 12px rgba(0, 0, 0, 0.1)",
+                                        padding: "20px",
+                                        borderRadius: "12px",
+                                        backgroundColor: darkMode ? "#333" : "#fff",
+                                        border: "1px solid #e0e0e0",
+                                        transition: "transform 0.3s, box-shadow 0.3s",
+                                        ":hover": {
+                                            transform: "translateY(-5px)",
+                                            boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
+                                        },
+                                    }}
+                                >
+                                    <div style={{ fontWeight: "bold", marginBottom: "10px", fontSize: "1.2em" }}>
+                                        {broker.BrokerName || "Unnamed Broker"}
+                                    </div>
+                                    <div style={{ marginBottom: "10px" }}>
+                                        <FontAwesomeIcon
+                                            icon={faCircle}
+                                            style={{
+                                                color: getStatusColor(broker.Status),
+                                                marginRight: "10px",
+                                            }}
+                                        />
+                                        Status: {broker.Status}
+                                        {broker.Status === "RUNNING" && " - Healthy"}
+                                        {broker.Status === "CREATION_FAILED" && " - Failed"}
+                                        {broker.Status === "REBOOT_IN_PROGRESS" && " - Rebooting"}
+                                    </div>
+                                    {broker.BrokerId && (
+                                        <div style={{ marginBottom: "10px" }}>Broker ID: {broker.BrokerId}</div>
+                                    )}
+                                </div>
+                            ))
+                        ) : (
+                            <div
+                                style={{
+                                    padding: "20px",
+                                    borderRadius: "12px",
+                                    backgroundColor: darkMode ? "#333" : "#fff",
+                                    border: "1px solid #e0e0e0",
+                                }}
+                            >
+                                {loading ? "Loading RabbitMQ status..." : "No RabbitMQ brokers found"}
+                            </div>
+                        )}
                     </div>
                 </>
             )}

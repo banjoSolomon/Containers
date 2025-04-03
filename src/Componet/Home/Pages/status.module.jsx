@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import karraboLogo from "./../../../asset/karrabo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDocker } from "@fortawesome/free-brands-svg-icons";
-import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Status = () => {
     const [statuses, setStatuses] = useState([]);
@@ -11,61 +11,66 @@ const Status = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchStatuses = async () => {
-            try {
-                const response = await fetch("https://9qyga7xn2j.execute-api.us-west-2.amazonaws.com/dev/status", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
+    const fetchStatuses = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-                if (!response.ok) throw new Error(`Error: ${response.status}`);
+            const response = await fetch("https://9qyga7xn2j.execute-api.us-west-2.amazonaws.com/dev/status", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
 
-                const data = await response.json();
-                console.log("API Response:", data);
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
 
-                const ec2Statuses = data.EC2.map((item) => ({
-                    id: item.id,
-                    name: item.name,
-                    uptime: item.uptime,
-                    performance: item.status === "running" ? "Operational" : "Down",
-                }));
+            const data = await response.json();
+            console.log("API Response:", data);
 
-                const ecsStatuses = data.ECS.map((service) => ({
-                    name: service.serviceName,
-                    uptime: service.runningDetails.length > 0 ? service.runningDetails[0].uptime : "N/A",
-                    performance: service.runningTasks > 0 ? "Operational" : "Down",
-                    runningTasks: service.runningTasks,
-                    stoppedTasks: service.stoppedTasks,
-                    runningDetails: service.runningDetails,
-                    stoppedDetails: service.stoppedDetails,
-                    downtime: service.stoppedDetails.map((task) => task.downtime).join(", ") || "N/A",
-                }));
+            const ec2Statuses = data.EC2.map((item) => ({
+                id: item.id,
+                name: item.name,
+                uptime: item.uptime,
+                performance: item.status === "running" ? "Operational" : "Down",
+            }));
 
-                setStatuses([...ec2Statuses, ...ecsStatuses]);
+            const ecsStatuses = data.ECS.map((service) => ({
+                name: service.serviceName,
+                uptime: service.runningDetails.length > 0 ? service.runningDetails[0].uptime : "N/A",
+                performance: service.runningTasks > 0 ? "Operational" : "Down",
+                runningTasks: service.runningTasks,
+                stoppedTasks: service.stoppedTasks,
+                runningDetails: service.runningDetails,
+                stoppedDetails: service.stoppedDetails,
+                downtime: service.stoppedDetails.map((task) => task.downtime).join(", ") || "N/A",
+            }));
 
-                const dockerImagesWithFlag = {};
-                const dockerImagesData = data.DockerImages || {};
-                for (const [instanceId, images] of Object.entries(dockerImagesData)) {
-                    dockerImagesWithFlag[instanceId] = {
-                        isOpen: false,
-                        images: images,
-                    };
-                }
-                setDockerImages(dockerImagesWithFlag);
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
+            setStatuses([...ec2Statuses, ...ecsStatuses]);
+            setLastUpdated(new Date());
+
+            const dockerImagesWithFlag = {};
+            const dockerImagesData = data.DockerImages || {};
+            for (const [instanceId, images] of Object.entries(dockerImagesData)) {
+                dockerImagesWithFlag[instanceId] = {
+                    isOpen: false,
+                    images: images,
+                };
             }
-        };
+            setDockerImages(dockerImagesWithFlag);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
+    useEffect(() => {
         fetchStatuses();
         const intervalId = setInterval(fetchStatuses, 20 * 60 * 1000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [fetchStatuses]);
 
     const toggleDockerImages = (instanceId) => {
         setDockerImages((prev) => ({
@@ -108,20 +113,43 @@ const Status = () => {
                     Dev Server Status
                 </h1>
                 <img src={karraboLogo} alt="Karrabo Logo" style={{ width: "50px", height: "50px" }} />
-                <button
-                    onClick={toggleDarkMode}
-                    style={{
-                        backgroundColor: darkMode ? "#4caf50" : "#333",
-                        color: "white",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        marginLeft: "auto",
-                    }}
-                >
-                    {darkMode ? "Light Mode" : "Dark Mode"}
-                </button>
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+                    {lastUpdated && (
+                        <div style={{ marginRight: "20px", color: darkMode ? "#aaa" : "#666" }}>
+                            Last updated: {lastUpdated.toLocaleTimeString()}
+                        </div>
+                    )}
+                    <button
+                        onClick={fetchStatuses}
+                        style={{
+                            backgroundColor: darkMode ? "#333" : "#e0e0e0",
+                            color: darkMode ? "#fff" : "#333",
+                            border: "none",
+                            padding: "10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            marginRight: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
+                        <FontAwesomeIcon icon={faSyncAlt} style={{ marginRight: "5px" }} />
+                        Refresh
+                    </button>
+                    <button
+                        onClick={toggleDarkMode}
+                        style={{
+                            backgroundColor: darkMode ? "#4caf50" : "#333",
+                            color: "white",
+                            border: "none",
+                            padding: "10px 20px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        {darkMode ? "Light Mode" : "Dark Mode"}
+                    </button>
+                </div>
             </div>
 
             {loading && (

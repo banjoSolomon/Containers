@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Meddle from "./../../../asset/meddle.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDocker } from "@fortawesome/free-brands-svg-icons";
-import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
+import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle, faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 
 const Meedle = () => {
     const [ecsServices, setEcsServices] = useState([]);
@@ -12,65 +12,70 @@ const Meedle = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
     const navigate = useNavigate();
 
+    const fetchStatuses = useCallback(async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch("https://bi0oumk6w7.execute-api.us-east-1.amazonaws.com/dev/meedl-status", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+            const data = await response.json();
+            console.log("API Response:", data);
+
+            // Process ECS services
+            const processedEcs = data.ECS.map(service => ({
+                name: service.serviceName,
+                uptime: service.runningDetails.length > 0 ? service.runningDetails[0].uptime : "N/A",
+                performance: service.runningTasks > 0 ? "Operational" : "Down",
+                runningTasks: service.runningTasks,
+                stoppedTasks: service.stoppedTasks,
+                runningDetails: service.runningDetails,
+                stoppedDetails: service.stoppedDetails,
+                downtime: service.stoppedDetails.map(task => task.downtime).join(", ") || "N/A",
+            }));
+
+            // Process EC2 instances
+            const processedEc2 = data.EC2.map(instance => ({
+                id: instance.instanceId,
+                name: instance.instanceName,
+                publicIp: instance.publicIp,
+                performance: "Operational",
+                dockerImages: instance.dockerImages.dockerImages
+            }));
+
+            setEcsServices(processedEcs);
+            setEc2Instances(processedEc2);
+            setLastUpdated(new Date());
+
+            // Initialize Docker images toggle state
+            const dockerImagesState = {};
+            data.EC2.forEach(instance => {
+                dockerImagesState[instance.instanceId] = {
+                    isOpen: false,
+                    images: instance.dockerImages.dockerImages
+                };
+            });
+            setDockerImages(dockerImagesState);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
-        const fetchStatuses = async () => {
-            try {
-                const response = await fetch("https://bi0oumk6w7.execute-api.us-east-1.amazonaws.com/dev/meedl-status", {
-                    method: "GET",
-                    headers: { "Content-Type": "application/json" },
-                });
-
-                if (!response.ok) throw new Error(`Error: ${response.status}`);
-
-                const data = await response.json();
-                console.log("API Response:", data);
-
-                // Process ECS services
-                const processedEcs = data.ECS.map(service => ({
-                    name: service.serviceName,
-                    uptime: service.runningDetails.length > 0 ? service.runningDetails[0].uptime : "N/A",
-                    performance: service.runningTasks > 0 ? "Operational" : "Down",
-                    runningTasks: service.runningTasks,
-                    stoppedTasks: service.stoppedTasks,
-                    runningDetails: service.runningDetails,
-                    stoppedDetails: service.stoppedDetails,
-                    downtime: service.stoppedDetails.map(task => task.downtime).join(", ") || "N/A",
-                }));
-
-                // Process EC2 instances
-                const processedEc2 = data.EC2.map(instance => ({
-                    id: instance.instanceId,
-                    name: instance.instanceName,
-                    publicIp: instance.publicIp,
-                    performance: "Operational", // Since we only fetch running instances
-                    dockerImages: instance.dockerImages.dockerImages
-                }));
-
-                setEcsServices(processedEcs);
-                setEc2Instances(processedEc2);
-
-                // Initialize Docker images toggle state
-                const dockerImagesState = {};
-                data.EC2.forEach(instance => {
-                    dockerImagesState[instance.instanceId] = {
-                        isOpen: false,
-                        images: instance.dockerImages.dockerImages
-                    };
-                });
-                setDockerImages(dockerImagesState);
-            } catch (error) {
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchStatuses();
         const intervalId = setInterval(fetchStatuses, 20 * 60 * 1000);
         return () => clearInterval(intervalId);
-    }, []);
+    }, [fetchStatuses]);
 
     const toggleDockerImages = (instanceId) => {
         setDockerImages(prev => ({
@@ -113,20 +118,43 @@ const Meedle = () => {
                     Dev Server Status
                 </h1>
                 <img src={Meddle} alt="Meddle Logo" style={{ width: "50px", height: "50px" }} />
-                <button
-                    onClick={toggleDarkMode}
-                    style={{
-                        backgroundColor: darkMode ? "#4caf50" : "#333",
-                        color: "white",
-                        border: "none",
-                        padding: "10px 20px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        marginLeft: "auto",
-                    }}
-                >
-                    {darkMode ? "Light Mode" : "Dark Mode"}
-                </button>
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}>
+                    {lastUpdated && (
+                        <div style={{ marginRight: "20px", color: darkMode ? "#aaa" : "#666" }}>
+                            Last updated: {lastUpdated.toLocaleTimeString()}
+                        </div>
+                    )}
+                    <button
+                        onClick={fetchStatuses}
+                        style={{
+                            backgroundColor: darkMode ? "#333" : "#e0e0e0",
+                            color: darkMode ? "#fff" : "#333",
+                            border: "none",
+                            padding: "10px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                            marginRight: "10px",
+                            display: "flex",
+                            alignItems: "center",
+                        }}
+                    >
+                        <FontAwesomeIcon icon={faSyncAlt} style={{ marginRight: "5px" }} />
+                        Refresh
+                    </button>
+                    <button
+                        onClick={toggleDarkMode}
+                        style={{
+                            backgroundColor: darkMode ? "#4caf50" : "#333",
+                            color: "white",
+                            border: "none",
+                            padding: "10px 20px",
+                            borderRadius: "5px",
+                            cursor: "pointer",
+                        }}
+                    >
+                        {darkMode ? "Light Mode" : "Dark Mode"}
+                    </button>
+                </div>
             </div>
 
             {loading && (

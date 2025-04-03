@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import karraboLogo from "./../../../asset/karrabo.png";
+import Meddle from "./../../../asset/meddle.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDocker } from "@fortawesome/free-brands-svg-icons";
 import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
@@ -116,7 +116,7 @@ const Meedle = () => {
                 >
                     Dev Server Status
                 </h1>
-                <img src={karraboLogo} alt="Karrabo Logo" style={{ width: "50px", height: "50px" }} />
+                <img src={Meddle} alt="Meddle Logo" style={{ width: "50px", height: "50px" }} />
                 <button
                     onClick={toggleDarkMode}
                     style={{

@@ -59,10 +59,6 @@ const Karrabo = () => {
         }));
     };
 
-    const handleImageClick = (images) => {
-        navigate("/metrics", { state: { images } });
-    };
-
     const toggleDarkMode = () => {
         setDarkMode(prev => !prev);
     };
@@ -231,16 +227,11 @@ const Karrabo = () => {
                                                             key={idx}
                                                             style={{
                                                                 marginBottom: "5px",
-                                                                cursor: "pointer",
                                                                 padding: "8px",
                                                                 backgroundColor: darkMode ? "#555" : "#fff",
                                                                 borderRadius: "8px",
                                                                 border: "1px solid #e0e0e0",
-                                                                ":hover": {
-                                                                    backgroundColor: darkMode ? "#666" : "#f0f0f0",
-                                                                },
                                                             }}
-                                                            onClick={() => handleImageClick(dockerImages[instance.instanceId].images)}
                                                         >
                                                             {image}
                                                         </div>

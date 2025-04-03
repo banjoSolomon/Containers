@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import karraboLogo from "./../../../asset/karrabo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faDocker } from "@fortawesome/free-brands-svg-icons";
-
 import { faServer, faTasks, faSpinner, faCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 
 const Status = () => {
@@ -76,10 +75,6 @@ const Status = () => {
                 isOpen: !prev[instanceId]?.isOpen,
             },
         }));
-    };
-
-    const handleImageClick = (images) => {
-        navigate("/metrics", { state: { images } });
     };
 
     const toggleDarkMode = () => {
@@ -234,16 +229,11 @@ const Status = () => {
                                                             key={idx}
                                                             style={{
                                                                 marginBottom: "5px",
-                                                                cursor: "pointer",
                                                                 padding: "8px",
                                                                 backgroundColor: darkMode ? "#555" : "#fff",
                                                                 borderRadius: "8px",
                                                                 border: "1px solid #e0e0e0",
-                                                                ":hover": {
-                                                                    backgroundColor: darkMode ? "#666" : "#f0f0f0",
-                                                                },
                                                             }}
-                                                            onClick={() => handleImageClick(dockerImages[status.id].images)}
                                                         >
                                                             {image}
                                                         </div>

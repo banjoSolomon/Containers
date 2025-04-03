@@ -4,6 +4,7 @@ import Status from "../Componet/Home/Pages/status.module";
 import Enum from "../Componet/Home/Pages/enum.module";
 import Karrabo from "../Componet/Home/Pages/karrabo.module";
 import Meedle from "../Componet/Home/Pages/meedle.module";
+import Mant from "../Componet/Home/Pages/mantra.module";
 
 
 
@@ -32,6 +33,10 @@ export const ROUTES = [
             {
                 path: '/meedle',
                 element: <Meedle/>,
+            },
+            {
+                path: '/mantra',
+                element: <Mant/>
 
             }
 

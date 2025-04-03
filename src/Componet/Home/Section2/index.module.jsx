@@ -5,13 +5,15 @@ import styles from "./index.module.css";
 import karraboLogo from "./../../../asset/karrabo.png";
 import meedlLogo from "./../../../asset/meddle.png";
 import enumLogo from "./../../../asset/enum.png";
+import mantraLogo from "./../../../asset/mantra.png";
 
 const fetchContainerStatus = async () => {
-    // Simulate an API call
+
     const containers = [
         { name: "Enum", status: "operational" },
         { name: "Karrabo", status: "operational" },
         { name: "Meedl", status: "operational" },
+        { name: "Mantra", status: "operational" },
     ];
     return Promise.resolve(containers);
 };
@@ -25,6 +27,8 @@ const ContainerCard = ({ container, onClick }) => {
                 return karraboLogo;
             case "Meedl":
                 return meedlLogo;
+            case "Mantra":
+                return mantraLogo;
             default:
                 return null;
         }
@@ -117,6 +121,9 @@ const Section2 = () => {
             case "Meedl":
                 navigate("/meedle");
                 break;
+            case "Mantra":
+                navigate("/mantra"); // Added route for Mantra
+                break;
             default:
                 break;
         }
@@ -163,6 +170,5 @@ const Section2 = () => {
         </div>
     );
 };
-
 
 export default Section2;

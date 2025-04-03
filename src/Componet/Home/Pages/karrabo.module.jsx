@@ -211,7 +211,7 @@ const Karrabo = () => {
                                             }}
                                         >
                                             <FontAwesomeIcon icon={faDocker} style={{ marginRight: "10px" }} />
-                                            {dockerImages[instance.instanceId].isOpen ? "Hide Docker Images" : "Show Docker Images"}
+                                            {dockerImages[instance.instanceId].isOpen ? "Hide Docker Containers" : "Show Docker Containers"}
                                         </button>
                                         {dockerImages[instance.instanceId].isOpen && (
                                             <div

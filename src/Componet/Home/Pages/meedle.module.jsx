@@ -222,7 +222,7 @@ const Meedle = () => {
                                             }}
                                         >
                                             <FontAwesomeIcon icon={faDocker} style={{ marginRight: "10px" }} />
-                                            {dockerImages[instance.id].isOpen ? "Hide Docker Images" : "Show Docker Images"}
+                                            {dockerImages[instance.id].isOpen ? "Hide Docker Containers" : "Show Docker Containers"}
                                         </button>
                                         {dockerImages[instance.id].isOpen && (
                                             <div

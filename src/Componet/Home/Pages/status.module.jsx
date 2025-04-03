@@ -214,7 +214,7 @@ const Status = () => {
                                             }}
                                         >
                                             <FontAwesomeIcon icon={faDocker} style={{ marginRight: "10px" }} />
-                                            {dockerImages[status.id].isOpen ? "Hide Docker Images" : "Show Docker Images"}
+                                            {dockerImages[status.id].isOpen ? "Hide Docker Containers" : "Show Docker Containers"}
                                         </button>
                                         {dockerImages[status.id].isOpen && (
                                             <div

@@ -337,7 +337,7 @@ const Karrabo = () => {
                     {/* RabbitMQ Section */}
                     <h2 style={{ margin: "30px 0 20px", display: "flex", alignItems: "center" }}>
                         <FontAwesomeIcon icon={faServer} style={{ marginRight: "10px" }} />
-                        RabbitMQ Status
+                        AmazonMQ Status
                     </h2>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
                         {statusData.AmazonMQ && statusData.AmazonMQ.length > 0 ? (
@@ -387,7 +387,7 @@ const Karrabo = () => {
                                     border: "1px solid #e0e0e0",
                                 }}
                             >
-                                {loading ? "Loading RabbitMQ status..." : "No RabbitMQ brokers found"}
+                                {loading ? "Loading RabbitMQ status..." : "No AmazonMQ brokers found"}
                             </div>
                         )}
                     </div>

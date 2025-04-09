@@ -19,7 +19,7 @@ const getLogo = (name) => {
     return logos[name] || null;
 };
 
-// Status indicator component
+
 const StatusIndicator = ({ status }) => {
     const statusConfig = {
         operational: { color: "#10B981", label: "Operational", emoji: "🟢" },
@@ -38,7 +38,7 @@ const StatusIndicator = ({ status }) => {
     );
 };
 
-// ContainerCard Component
+
 const ContainerCard = ({ container, onClick }) => {
     return (
         <motion.div
@@ -91,7 +91,7 @@ const ContainerCard = ({ container, onClick }) => {
     );
 };
 
-// Section2 Component (Main Container for Status Cards)
+
 const Section2 = () => {
     const [containers, setContainers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -103,10 +103,10 @@ const Section2 = () => {
 
     const fetchContainerStatus = async () => {
         try {
-            // Simulate API delay
+
             await new Promise(resolve => setTimeout(resolve, 800));
 
-            // Mock data with more details
+
             const data = [
                 {
                     name: "Enum",

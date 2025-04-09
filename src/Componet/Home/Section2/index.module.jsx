@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { FiRefreshCw, FiExternalLink, FiClock } from "react-icons/fi";
 import karraboLogo from "./../../../asset/karrabo.png";
 import meedlLogo from "./../../../asset/meddle.png";
 import enumLogo from "./../../../asset/enum.png";
@@ -9,24 +10,36 @@ import styles from "./index.module.css";
 
 // Function to get logo based on container name
 const getLogo = (name) => {
-    switch (name) {
-        case "Enum":
-            return enumLogo;
-        case "Karrabo":
-            return karraboLogo;
-        case "Meedl":
-            return meedlLogo;
-        case "Mantra":
-            return mantraLogo;
-        default:
-            return null;
-    }
+    const logos = {
+        Enum: enumLogo,
+        Karrabo: karraboLogo,
+        Meedl: meedlLogo,
+        Mantra: mantraLogo,
+    };
+    return logos[name] || null;
+};
+
+// Status indicator component
+const StatusIndicator = ({ status }) => {
+    const statusConfig = {
+        operational: { color: "#10B981", label: "Operational", emoji: "🟢" },
+        degraded: { color: "#F59E0B", label: "Degraded", emoji: "🟡" },
+        outage: { color: "#EF4444", label: "Outage", emoji: "🔴" },
+        maintenance: { color: "#6366F1", label: "Maintenance", emoji: "🟠" },
+    };
+
+    const config = statusConfig[status] || statusConfig.outage;
+
+    return (
+        <div className={styles.statusIndicator} style={{ backgroundColor: config.color }}>
+            <span className={styles.statusEmoji}>{config.emoji}</span>
+            <span className={styles.statusLabel}>{config.label}</span>
+        </div>
+    );
 };
 
 // ContainerCard Component
 const ContainerCard = ({ container, onClick }) => {
-    const statusEmoji = container.status === "operational" ? "🟢" : "🔴";
-
     return (
         <motion.div
             className={styles.containerCard}
@@ -34,42 +47,45 @@ const ContainerCard = ({ container, onClick }) => {
             role="button"
             tabIndex={0}
             aria-label={`View ${container.name} status`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            style={{
-                margin: "10px",
-                padding: "20px",
-                borderRadius: "8px",
-                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                width: "100%",
-                maxWidth: "600px",
-                boxSizing: "border-box",
-                cursor: "pointer",
-                transition: "transform 0.3s, box-shadow 0.3s",
-            }}
+            whileHover={{ y: -5 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
         >
-            <div style={{ display: "flex", alignItems: "center" }}>
-                <img
-                    src={getLogo(container.name)}
-                    alt={`${container.name} Logo`}
-                    style={{ width: "30px", height: "30px", marginRight: "10px" }}
-                />
+            <div className={styles.cardHeader}>
+                <div className={styles.logoContainer}>
+                    <img
+                        src={getLogo(container.name)}
+                        alt={`${container.name} Logo`}
+                        className={styles.logo}
+                    />
+                </div>
                 <div className={styles.containerName}>{container.name}</div>
+                <FiExternalLink className={styles.externalLinkIcon} />
             </div>
-            <div
-                style={{
-                    backgroundColor: container.status === "operational" ? "#4caf50" : "#ff3b3b",
-                    color: "white",
-                    padding: "5px 10px",
-                    borderRadius: "5px",
-                    fontSize: "12px",
-                    textTransform: "uppercase",
-                }}
-            >
-                {statusEmoji} {container.status}
+
+            <div className={styles.cardBody}>
+                <StatusIndicator status={container.status} />
+
+                {container.responseTime && (
+                    <div className={styles.responseTime}>
+                        <span className={styles.timeValue}>{container.responseTime}ms</span>
+                        <span className={styles.timeLabel}>avg response</span>
+                    </div>
+                )}
+
+                {container.uptime && (
+                    <div className={styles.uptime}>
+                        <div className={styles.uptimeBar}>
+                            <div
+                                className={styles.uptimeFill}
+                                style={{ width: `${container.uptime}%` }}
+                            />
+                        </div>
+                        <span className={styles.uptimeValue}>{container.uptime}% uptime</span>
+                    </div>
+                )}
             </div>
         </motion.div>
     );
@@ -80,113 +96,148 @@ const Section2 = () => {
     const [containers, setContainers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [lastUpdated, setLastUpdated] = useState(Date.now());
+    const [lastUpdated, setLastUpdated] = useState(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const navigate = useNavigate();
 
-    // Fetching container status (dummy data for now)
-    useEffect(() => {
-        const updateContainers = async () => {
-            try {
-                const data = [
-                    { name: "Enum", status: "operational" },
-                    { name: "Karrabo", status: "operational" },
-                    { name: "Meedl", status: "operational" },
-                    { name: "Mantra", status: "operational" },
-                ];
-                setContainers(data);
-                setError(null);
-            } catch (error) {
-                console.error("Error fetching container status:", error);
-                setError("Failed to fetch container status. Please try again later.");
-            } finally {
-                setLoading(false);
-                setLastUpdated(Date.now());
-            }
-        };
+    // Simulate fetching container status with more realistic data
+    const fetchContainerStatus = async () => {
+        try {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 800));
 
-        updateContainers();
-        const interval = setInterval(updateContainers, 5000);
+            // Mock data with more details
+            const data = [
+                {
+                    name: "Enum",
+                    status: "operational",
+                    responseTime: 124,
+                    uptime: 99.98,
+                    lastIncident: "2023-05-15T08:23:00Z"
+                },
+                {
+                    name: "Karrabo",
+                    status: "operational",
+                    responseTime: 89,
+                    uptime: 99.99,
+                    lastIncident: null
+                },
+                {
+                    name: "Meedl",
+                    status: "degraded",
+                    responseTime: 342,
+                    uptime: 99.87,
+                    lastIncident: "2023-05-20T14:45:00Z"
+                },
+                {
+                    name: "Mantra",
+                    status: "operational",
+                    responseTime: 156,
+                    uptime: 99.95,
+                    lastIncident: "2023-04-30T11:12:00Z"
+                },
+            ];
+
+            setContainers(data);
+            setError(null);
+            setLastUpdated(new Date());
+        } catch (error) {
+            console.error("Error fetching container status:", error);
+            setError("Failed to fetch container status. Please try again later.");
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchContainerStatus();
+        const interval = setInterval(fetchContainerStatus, 30000); // Refresh every 30 seconds
 
         return () => clearInterval(interval);
     }, []);
 
-    // Handle clicking on a container card
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        fetchContainerStatus();
+    };
+
     const handleContainerClick = (containerName) => {
-        switch (containerName) {
-            case "Karrabo":
-                navigate("/status");
-                break;
-            case "Enum":
-                navigate("/enum");
-                break;
-            case "Meedl":
-                navigate("/meedle");
-                break;
-            case "Mantra":
-                navigate("/mantra");
-                break;
-            default:
-                break;
+        const routes = {
+            Karrabo: "/status",
+            Enum: "/enum",
+            Meedl: "/meedle",
+            Mantra: "/mantra",
+        };
+
+        if (routes[containerName]) {
+            navigate(routes[containerName]);
         }
     };
 
-    // Function to show last update time
-    const timeSinceLastUpdate = () => {
-        const seconds = Math.floor((Date.now() - lastUpdated) / 1000);
-        if (seconds < 60) return `${seconds} seconds ago`;
-        const minutes = Math.floor(seconds / 60);
-        if (minutes < 60) return `${minutes} minutes ago`;
-        const hours = Math.floor(minutes / 60);
-        return `${hours} hours ago`;
+    const formatLastUpdated = () => {
+        if (!lastUpdated) return "Never updated";
+
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - lastUpdated) / 1000);
+
+        if (diffInSeconds < 60) return `Updated ${diffInSeconds} seconds ago`;
+        if (diffInSeconds < 3600) return `Updated ${Math.floor(diffInSeconds / 60)} minutes ago`;
+        if (diffInSeconds < 86400) return `Updated ${Math.floor(diffInSeconds / 3600)} hours ago`;
+        return `Updated ${lastUpdated.toLocaleString()}`;
     };
 
     return (
         <div className={styles.Section2App}>
-            <p className={styles.text} style={{ fontSize: "20px", marginBottom: "20px" }}>
-                Environment Status
-            </p>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Environment Status</h1>
+                <p className={styles.subtitle}>Real-time monitoring of all services</p>
+
+                <div className={styles.controls}>
+                    <button
+                        className={styles.refreshButton}
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                    >
+                        <FiRefreshCw className={`${styles.refreshIcon} ${isRefreshing ? styles.spinning : ''}`} />
+                        Refresh
+                    </button>
+
+                    <div className={styles.lastUpdated}>
+                        <FiClock className={styles.clockIcon} />
+                        <span>{formatLastUpdated()}</span>
+                    </div>
+                </div>
+            </div>
+
             {loading ? (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        height: "100px",
-                    }}
-                >
+                <div className={styles.loadingContainer}>
                     <motion.div
-                        className="spinner"
                         animate={{ rotate: 360 }}
-                        transition={{ repeat: Infinity, duration: 1 }}
-                        style={{
-                            width: "50px",
-                            height: "50px",
-                            border: "5px solid #f3f3f3",
-                            borderTop: "5px solid #4caf50",
-                            borderRadius: "50%",
-                        }}
+                        transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                        className={styles.spinner}
                     />
+                    <p>Loading service status...</p>
                 </div>
             ) : error ? (
-                <div style={{ color: "red", textAlign: "center" }}>
+                <div className={styles.errorContainer}>
+                    <div className={styles.errorIcon}>⚠️</div>
+                    <h3>Unable to load status</h3>
                     <p>{error}</p>
                     <button
-                        onClick={() => window.location.reload()}
-                        style={{
-                            backgroundColor: "#4caf50",
-                            color: "white",
-                            border: "none",
-                            padding: "10px 20px",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            marginTop: "10px",
-                        }}
+                        onClick={handleRefresh}
+                        className={styles.retryButton}
                     >
                         Retry
                     </button>
                 </div>
             ) : (
-                <div className={styles.containerStatus}>
+                <motion.div
+                    className={styles.containerGrid}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5 }}
+                >
                     {containers.map((container) => (
                         <ContainerCard
                             key={container.name}
@@ -194,11 +245,16 @@ const Section2 = () => {
                             onClick={() => handleContainerClick(container.name)}
                         />
                     ))}
-                    <div style={{ marginTop: "20px", fontSize: "12px", color: "#999" }}>
-                        Last updated: {timeSinceLastUpdate()}
-                    </div>
-                </div>
+                </motion.div>
             )}
+
+            <div className={styles.footer}>
+                <p>Need help? Contact our support team</p>
+                <div className={styles.systemStatus}>
+                    <span className={styles.dot}></span>
+                    <span>All systems operational</span>
+                </div>
+            </div>
         </div>
     );
 };

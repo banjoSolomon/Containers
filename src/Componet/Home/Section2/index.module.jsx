@@ -1,46 +1,41 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import styles from "./index.module.css";
-
+import { motion } from "framer-motion";
 import karraboLogo from "./../../../asset/karrabo.png";
 import meedlLogo from "./../../../asset/meddle.png";
 import enumLogo from "./../../../asset/enum.png";
 import mantraLogo from "./../../../asset/mantra.png";
+import styles from "./index.module.css";
 
-const fetchContainerStatus = async () => {
-
-    const containers = [
-        { name: "Enum", status: "operational" },
-        { name: "Karrabo", status: "operational" },
-        { name: "Meedl", status: "operational" },
-        { name: "Mantra", status: "operational" },
-    ];
-    return Promise.resolve(containers);
+// Function to get logo based on container name
+const getLogo = (name) => {
+    switch (name) {
+        case "Enum":
+            return enumLogo;
+        case "Karrabo":
+            return karraboLogo;
+        case "Meedl":
+            return meedlLogo;
+        case "Mantra":
+            return mantraLogo;
+        default:
+            return null;
+    }
 };
 
+// ContainerCard Component
 const ContainerCard = ({ container, onClick }) => {
-    const getLogo = (name) => {
-        switch (name) {
-            case "Enum":
-                return enumLogo;
-            case "Karrabo":
-                return karraboLogo;
-            case "Meedl":
-                return meedlLogo;
-            case "Mantra":
-                return mantraLogo;
-            default:
-                return null;
-        }
-    };
+    const statusEmoji = container.status === "operational" ? "🟢" : "🔴";
 
     return (
-        <div
+        <motion.div
             className={styles.containerCard}
             onClick={onClick}
             role="button"
             tabIndex={0}
             aria-label={`View ${container.name} status`}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             style={{
                 margin: "10px",
                 padding: "20px",
@@ -54,10 +49,6 @@ const ContainerCard = ({ container, onClick }) => {
                 boxSizing: "border-box",
                 cursor: "pointer",
                 transition: "transform 0.3s, box-shadow 0.3s",
-                ":hover": {
-                    transform: "translateY(-5px)",
-                    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.2)",
-                },
             }}
         >
             <div style={{ display: "flex", alignItems: "center" }}>
@@ -78,22 +69,30 @@ const ContainerCard = ({ container, onClick }) => {
                     textTransform: "uppercase",
                 }}
             >
-                {container.status}
+                {statusEmoji} {container.status}
             </div>
-        </div>
+        </motion.div>
     );
 };
 
+// Section2 Component (Main Container for Status Cards)
 const Section2 = () => {
     const [containers, setContainers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [lastUpdated, setLastUpdated] = useState(Date.now());
     const navigate = useNavigate();
 
+    // Fetching container status (dummy data for now)
     useEffect(() => {
         const updateContainers = async () => {
             try {
-                const data = await fetchContainerStatus();
+                const data = [
+                    { name: "Enum", status: "operational" },
+                    { name: "Karrabo", status: "operational" },
+                    { name: "Meedl", status: "operational" },
+                    { name: "Mantra", status: "operational" },
+                ];
                 setContainers(data);
                 setError(null);
             } catch (error) {
@@ -101,6 +100,7 @@ const Section2 = () => {
                 setError("Failed to fetch container status. Please try again later.");
             } finally {
                 setLoading(false);
+                setLastUpdated(Date.now());
             }
         };
 
@@ -110,6 +110,7 @@ const Section2 = () => {
         return () => clearInterval(interval);
     }, []);
 
+    // Handle clicking on a container card
     const handleContainerClick = (containerName) => {
         switch (containerName) {
             case "Karrabo":
@@ -122,11 +123,21 @@ const Section2 = () => {
                 navigate("/meedle");
                 break;
             case "Mantra":
-                navigate("/mantra"); // Added route for Mantra
+                navigate("/mantra");
                 break;
             default:
                 break;
         }
+    };
+
+    // Function to show last update time
+    const timeSinceLastUpdate = () => {
+        const seconds = Math.floor((Date.now() - lastUpdated) / 1000);
+        if (seconds < 60) return `${seconds} seconds ago`;
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} minutes ago`;
+        const hours = Math.floor(minutes / 60);
+        return `${hours} hours ago`;
     };
 
     return (
@@ -135,8 +146,26 @@ const Section2 = () => {
                 Environment Status
             </p>
             {loading ? (
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}>
-                    <p>Loading...</p>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "100px",
+                    }}
+                >
+                    <motion.div
+                        className="spinner"
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 1 }}
+                        style={{
+                            width: "50px",
+                            height: "50px",
+                            border: "5px solid #f3f3f3",
+                            borderTop: "5px solid #4caf50",
+                            borderRadius: "50%",
+                        }}
+                    />
                 </div>
             ) : error ? (
                 <div style={{ color: "red", textAlign: "center" }}>
@@ -165,6 +194,9 @@ const Section2 = () => {
                             onClick={() => handleContainerClick(container.name)}
                         />
                     ))}
+                    <div style={{ marginTop: "20px", fontSize: "12px", color: "#999" }}>
+                        Last updated: {timeSinceLastUpdate()}
+                    </div>
                 </div>
             )}
         </div>

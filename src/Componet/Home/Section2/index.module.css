@@ -14,8 +14,9 @@
 }
 
 .text {
-    font-size: 15px;
+    font-size: 20px;
     font-weight: bold;
+    color: #333;
     margin-bottom: 20px;
 }
 
@@ -29,6 +30,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.containerCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .containerName {
@@ -54,52 +61,11 @@
     border-radius: 5px;
     font-weight: bold;
     font-size: 12px;
-}
-.Section2App {
-    padding: 20px;
-    background-color: #f9fafb;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 
-.text {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.containerStatus {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 600px;
-}
-
-.containerCard {
-    margin: 10px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    box-sizing: border-box;
-    cursor: pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.containerCard:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-}
-
-.containerName {
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
+    .spinner {
+        display: inline-block;
+        border-radius: 50%;
+        border: 3px solid #ddd;
+        border-top: 3px solid #4caf50;
+    }
 }

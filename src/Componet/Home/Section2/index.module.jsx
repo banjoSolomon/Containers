@@ -8,7 +8,7 @@ import enumLogo from "./../../../asset/enum.png";
 import mantraLogo from "./../../../asset/mantra.png";
 import styles from "./index.module.css";
 
-// Function to get logo based on container name
+
 const getLogo = (name) => {
     const logos = {
         Enum: enumLogo,
@@ -100,7 +100,7 @@ const Section2 = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const navigate = useNavigate();
 
-    // Simulate fetching container status with more realistic data
+
     const fetchContainerStatus = async () => {
         try {
             // Simulate API delay
@@ -124,7 +124,7 @@ const Section2 = () => {
                 },
                 {
                     name: "Meedl",
-                    status: "degraded",
+                    status: "operational",
                     responseTime: 342,
                     uptime: 99.87,
                     lastIncident: "2023-05-20T14:45:00Z"
@@ -152,7 +152,7 @@ const Section2 = () => {
 
     useEffect(() => {
         fetchContainerStatus();
-        const interval = setInterval(fetchContainerStatus, 30000); // Refresh every 30 seconds
+        const interval = setInterval(fetchContainerStatus, 30000);
 
         return () => clearInterval(interval);
     }, []);
